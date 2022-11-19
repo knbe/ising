@@ -99,7 +99,9 @@ int main() {
 
 	srand(time(NULL));
 
-	for (int itr = 0; itr < 5; itr++) {
+	int N_itr = N*N*10;
+
+	for (int itr = 0; itr < N_itr; itr++) {
 		int i = rdn_int(0, L);
 		int j = rdn_int(0, L);
 
@@ -107,19 +109,19 @@ int main() {
 
 		//prspins(&S);
 
-		//printf("itr=%d, i=%d, j=%d, dE=%d\n", itr, i, j, dE);
+		printf("itr=%d, i=%d, j=%d, dE=%d\n", itr, i, j, dE);
 
 		if (dE <= 0) {
 			S[i][j] *= -1;
-			//printf("   flip spin %d,%d\n", i, j);
+			printf("   flip spin %d,%d\n", i, j);
 		}
 		else {
 			double r = rdn();
 			if (r < exp(-dE / T)) {
 				S[i][j] *= -1; 
-				//printf("   >0 flip, r=%f, exp(-dE/T)=%f\n", 
-						r, exp(-dE/T));
-				//printf("   flip spin %d,%d\n", i, j);
+				//printf("   >0 flip, r=%f, 
+				// exp(-dE/T)=%f\n", r, exp(-dE/T));
+				printf("   >0 flip spin %d,%d\n", i, j);
 				//prspins(&S);
 			}
 		}
