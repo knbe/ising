@@ -1,4 +1,4 @@
 files = main.c
 
 run : $(files)
-	cc $(files) -lm
+	cc $(files) -lm -lncurses

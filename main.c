@@ -2,23 +2,44 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <unistd.h>
+#include "pseudo.h"
 
-#define L 10
+#define L 40
 #define N (L*L)
 #define J 1
-#define T 2.5
+//#define T 2.50
 
-// int *s[L][L];
-
-double rdn() {
-	return((rand() % 10000) / 10000.0);
+void prspins(int (*S)[L][L]) {
+	for (int i = 0; i < L; i++) {
+		for (int j = 0; j < L; j++) {
+			printf("%d,%d=%d   ", i, j, (*S)[i][j]); 
+		}
+		printf("\n");
+	}
 }
 
-int rdn_int(int lb, int ub) {
-	return((rand() % ((ub-1) - lb + 1)) + lb);
+void showspins(int (*S)[L][L]) {
+	for (int i = 0; i < L; i++) {
+		for (int j = 0; j < L; j++) {
+			char *c;
+			if ((*S)[i][j] > 0) {
+				//c = "■";
+				c = "██";
+			}
+			else if ((*S)[i][j] < 0) {
+				//c = "□";
+				c = "░░";
+			}
+			printf("%s", c);
+		}
+		printf("\n");
+	}
+	printf("\n");
 }
 
-void initialise(int (*S)[L][L]) {
+void initialise(int (*S)[L][L], double T) {
+	printf("\033[2J\033[1;1H");
 	for (int i = 0; i < L; i++) {
 		for (int j = 0; j < L; j++) {
 			if (rdn() < 0.5) {
@@ -30,55 +51,44 @@ void initialise(int (*S)[L][L]) {
 
 		}
 	}
+
+	printf("T=%f, J=%d, L=%d, N=%d\n", T, J, L, N);
+	showspins(S);
+	sleep(5);
 	
 }
 
-void prspins(int (*S)[L][L]) {
-	for (int i = 0; i < L; i++) {
-		for (int j = 0; j < L; j++) {
-			printf("%d,%d=%d   ", i, j, (*S)[i][j]); 
-		}
-		printf("\n");
-	}
-
-}
-
-int deltaE(int i, int j, int (*S)[L][L]) {
+int get_ssflip_dE(int i, int j, int (*S)[L][L]) {
 	// periodic bcs
 	int S_up, S_dn, S_lf, S_rt; 
-	//printf("%d,%d\n", i, j);
 
-	// up
+	// nn up
 	if (j == (L-1)) {
 		S_up = (*S)[i][0]; 
-		//printf("edge\n"); 
 	}
 	else {
 		S_up = (*S)[i][j+1];
 	}
 
-	// dn
+	// nn dn
 	if (j == 0) {
 		S_dn = (*S)[i][L-1];
-		//printf("edge\n"); 
 	}
 	else {
 		S_dn = (*S)[i][j-1];
 	}
 
-	// left
+	// nn left
 	if (i == 0) {
 		S_lf = (*S)[L-1][j];
-		//printf("edge\n"); 
 	}
 	else {
 		S_lf = (*S)[i-1][j];
 	}
 
-	// right
+	// nn right
 	if (i == (L-1)) {
 		S_rt = (*S)[0][j];
-		//printf("edge\n"); 
 	}
 	else {
 		S_rt = (*S)[i+1][j];
@@ -89,42 +99,57 @@ int deltaE(int i, int j, int (*S)[L][L]) {
 	int dE = 2 * J * (*S)[i][j] * (S_up + S_dn + S_lf + S_rt);
 
 	return dE;
-
 }
 
 int main() {
-	int S[L][L]; 
-	initialise(&S);
-	//prspins(&S);
-
 	srand(time(NULL));
 
-	int N_itr = N*N*10;
+	int S[L][L]; 
 
-	for (int itr = 0; itr < N_itr; itr++) {
-		int i = rdn_int(0, L);
-		int j = rdn_int(0, L);
+	double T = 5; //starting T
+	double T_step = 0.01;
+	int N_Tsteps = T/T_step;
 
-		int dE = deltaE(i, j, &S);
+	initialise(&S, T);
 
-		//prspins(&S);
+	//prspins(&S);
+	//showspins(&S);
 
-		printf("itr=%d, i=%d, j=%d, dE=%d\n", itr, i, j, dE);
+	int N_itr = 1000000;
 
-		if (dE <= 0) {
-			S[i][j] *= -1;
-			printf("   flip spin %d,%d\n", i, j);
-		}
-		else {
-			double r = rdn();
-			if (r < exp(-dE / T)) {
-				S[i][j] *= -1; 
-				//printf("   >0 flip, r=%f, 
-				// exp(-dE/T)=%f\n", r, exp(-dE/T));
-				printf("   >0 flip spin %d,%d\n", i, j);
-				//prspins(&S);
+	for (int t = 0; t < (N_Tsteps+1); t++) {
+
+		for (int itr = 0; itr < N_itr; itr++) {
+			int i = rdn_int(0, L);
+			int j = rdn_int(0, L);
+
+			int dE = get_ssflip_dE(i, j, &S);
+
+			//prspins(&S);
+
+			//printf("itr=%d, i=%d, j=%d, dE=%d\n", itr, i, j, dE);
+
+			//printf("\033[2J\033[1;1H");
+			//printf("itr=%d, dE=%d\n", itr, dE);
+			//showspins(&S);
+
+			if (dE <= 0) {
+				S[i][j] *= -1;
+				//printf("   flip spin %d,%d\n", i, j);
+			}
+			else {
+				double r = rdn();
+				if (r < exp(-dE / T)) {
+					S[i][j] *= -1; 
+					//printf("   >0 flip spin %d,%d\n", i, j);
+				}
 			}
 		}
-		
+
+		printf("\033[2J\033[1;1H");
+		printf("T=%f, J=%d, L=%d, N=%d\n", T, J, L, N);
+		showspins(&S);
+
+		T -= T_step;
 	}
 }
