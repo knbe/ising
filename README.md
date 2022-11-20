@@ -1,3 +1,3 @@
-2d ising model. Critical around T = 2.3. 
+The 2D Ising model. $T_c$
 
 ![](media/sweep1.gif)
