@@ -4,6 +4,7 @@
 #include <math.h>
 #include <unistd.h>
 #include "pseudo.h"
+#include "termdata.h"
 
 #define L 40
 #define N (L*L)
@@ -24,11 +25,9 @@ void showspins(int (*S)[L][L]) {
 		for (int j = 0; j < L; j++) {
 			char *c;
 			if ((*S)[i][j] > 0) {
-				//c = "■";
 				c = "██";
 			}
 			else if ((*S)[i][j] < 0) {
-				//c = "□";
 				c = "░░";
 			}
 			printf("%s", c);
@@ -39,7 +38,7 @@ void showspins(int (*S)[L][L]) {
 }
 
 void initialise(int (*S)[L][L], double T) {
-	printf("\033[2J\033[1;1H");
+	blankline();
 	for (int i = 0; i < L; i++) {
 		for (int j = 0; j < L; j++) {
 			if (rdn() < 0.5) {
@@ -94,8 +93,6 @@ int get_ssflip_dE(int i, int j, int (*S)[L][L]) {
 		S_rt = (*S)[i+1][j];
 	}
 
-	//printf("S_up=%d, S_dn=%d, S_lf=%d, S_rt=%d\n", S_up, S_dn, S_lf, S_rt);
-
 	int dE = 2 * J * (*S)[i][j] * (S_up + S_dn + S_lf + S_rt);
 
 	return dE;
@@ -112,7 +109,6 @@ int main() {
 
 	initialise(&S, T);
 
-	//prspins(&S);
 	//showspins(&S);
 
 	int N_itr = 1000000;
@@ -124,14 +120,6 @@ int main() {
 			int j = rdn_int(0, L);
 
 			int dE = get_ssflip_dE(i, j, &S);
-
-			//prspins(&S);
-
-			//printf("itr=%d, i=%d, j=%d, dE=%d\n", itr, i, j, dE);
-
-			//printf("\033[2J\033[1;1H");
-			//printf("itr=%d, dE=%d\n", itr, dE);
-			//showspins(&S);
 
 			if (dE <= 0) {
 				S[i][j] *= -1;
