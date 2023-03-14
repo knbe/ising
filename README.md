@@ -1,5 +1,5 @@
-2D Ising model. 
+2D monte-carlo Ising model. 
 
-Monte-Carlo temperature sweep outputs to terminal. $T_c ≃ 2.3$.
+The temperature sweep outputs to the terminal. $T_c ≃ 2.3$.
 
 ![](media/sweep1.gif)
